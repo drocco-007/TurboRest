@@ -5,6 +5,21 @@ from turbogears import expose
 from turbogears.controllers import RootController, Controller
 
 
+def RESTContainer(resource_cls):
+    def decorator(controller_cls):
+        def __getattr__(self, attribute):
+            try:
+                return resource_cls(int(attribute))
+            except ValueError:
+                super(controller_cls, self).__getattr__(attribute)
+
+        controller_cls.__getattr__ = __getattr__
+
+        return controller_cls
+
+    return decorator
+
+
 class RESTResource(Controller):
     @expose()
     def default(self, *vpath, **kw):
@@ -18,17 +33,11 @@ class RESTResource(Controller):
         return method(*vpath, **kw)
 
 
+# exercise for the reader...
+# @RESTContainer(ApplicationResource)
 class CandidateApplicationsResource(RESTResource):
     def __init__(self, candidate_resource):
         self.candidate_resource = candidate_resource
-
-    def __getattr__(self, attribute):
-        try:
-            # exercise for the reader...
-            # return ApplicationResource(int(attribute))
-            raise ValueError()
-        except ValueError:
-            super(CandidateApplicationsResource, self).__getattr__(attribute)
 
     @expose()
     def default(self):
@@ -57,13 +66,8 @@ class CandidateResource(RESTResource):
 
 
 # normally this would probably inherit from identity.SecureResource
+@RESTContainer(CandidateResource)
 class CandidateRootController(Controller):
-    def __getattr__(self, attribute):
-        try:
-            return CandidateResource(int(attribute))
-        except ValueError:
-            super(CandidateRootController, self).__getattr__(attribute)
-
     @expose()
     def default(self):
         return 'candidate controller root<br/>' \
