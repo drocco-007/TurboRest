@@ -18,6 +18,24 @@ class RESTResource(Controller):
         return method(*vpath, **kw)
 
 
+class CandidateApplicationsResource(RESTResource):
+    def __init__(self, candidate_resource):
+        self.candidate_resource = candidate_resource
+
+    def __getattr__(self, attribute):
+        try:
+            # exercise for the reader...
+            # return ApplicationResource(int(attribute))
+            raise ValueError()
+        except ValueError:
+            super(CandidateApplicationsResource, self).__getattr__(attribute)
+
+    @expose()
+    def default(self):
+        return {'success': True, 'applications': [{'application_id': 12345}],
+                'candidate_id': self.candidate_resource.candidate_id}
+
+
 class CandidateResource(RESTResource):
     def __init__(self, id):
         super(CandidateResource, self).__init__()
@@ -26,9 +44,16 @@ class CandidateResource(RESTResource):
         # in a real system, we'd
         # self.candidate = Candidate.get(id)
 
+        # set up subordinate resources
+        self.applications = CandidateApplicationsResource(self)
+
     @expose()
     def GET(self):
         return {'success': True, 'candidate': {'id': self.candidate_id}}
+
+    @expose()
+    def POST(self):
+        return {'success': True}
 
 
 # normally this would probably inherit from identity.SecureResource
@@ -53,4 +78,6 @@ class Root(RootController):
     @expose()
     def index(self):
         return '<a href="/candidate">Candidate Controller</a><br/>' \
-               '<a href="/candidate/1">Candidate 1 (GET)</a><br/>'
+               '<a href="/candidate/1">Candidate 1 (GET)</a><br/>' \
+               '<a href="/candidate/1/applications">Candidate 1 ' \
+               'applications (GET)</a><br/>'
