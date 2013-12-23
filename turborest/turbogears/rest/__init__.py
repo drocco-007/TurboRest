@@ -4,6 +4,27 @@ from turbogears.controllers import expose, Controller
 
 
 def RESTContainer(resource_cls):
+    """Class decorator for implementing REST-style container controllers.
+
+    For example, to create a list of candidate resources such that::
+
+        /candidates/<id>
+
+    returns a candidate resource for the specified candidate, define the
+    candidates controller as
+
+    >>> class CandidateResource(RESTResource):
+    ...     "Represents a single candidate"
+
+    >>> @RESTContainer(CandidateResource)
+    ... class CandidateRootController(Controller):
+    ...    pass
+
+    The resource class must have a constructor that takes a single integer ID
+    as its parameter.
+
+    """
+
     def decorator(controller_cls):
         def __getattr__(self, attribute):
             try:
@@ -19,6 +40,16 @@ def RESTContainer(resource_cls):
 
 
 class RESTResource(Controller):
+    """Controller base class that provides HTTP method-based dispatch.
+
+    Subclasses should define methods for each HTTP method they wish to
+    implement (e.g. ``GET``).
+
+    See ``README.rst`` and ``controllers.py`` in the example application for
+    example usages.
+
+    """
+
     @expose()
     def default(self, *vpath, **kw):
         http_method = cherrypy.request.method

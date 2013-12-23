@@ -26,9 +26,7 @@ TurboGears 1.5. It supplies two abstractions
 
 ``RESTContainer``
     Class decorator for creating containers of a specified resource. For
-    example, to create a list of candidate resources such that
-
-    ::
+    example, to create a list of candidate resources such that::
 
         /candidates/<id>
 
