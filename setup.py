@@ -41,7 +41,7 @@ class build_py_and_kid(build_py):
                 log.debug("skipping byte-compilation of %s", kid_file)
 
 setup(
-    name='tg1-resource-controllers-',
+    name='tg1-resource-controllers',
     version=version,
     # uncomment the following lines if you fill them out in release.py
     #description=description,
@@ -97,13 +97,15 @@ setup(
         # 'Framework :: TurboGears :: Widgets',
     ],
     test_suite='nose.collector',
-    entry_points={
-        'console_scripts': [
-            'start-tg_resources = tg_resources.command:start',
-            # See the tg_resources.command.bootstrap function for details
-            'bootstrap-tg_resources = tg_resources.command:bootstrap',
-        ],
-    },
+    entry_points="""
+        [console_scripts]
+        start-tg_resources = tg_resources.command:start
+        # See the tg_resources.command.bootstrap function for details
+        bootstrap-tg_resources = tg_resources.command:bootstrap
+
+        [turbogears.extensions]
+        tg1_rest = tg1_rest.turbogears.rest
+    """,
     cmdclass={
         'build_py': build_py_and_kid,
     }
