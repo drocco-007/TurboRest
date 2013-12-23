@@ -1,7 +1,7 @@
 `controllers.py`_ demonstrates a model for TurboGears REST resource
 controllers. ``CandidateResource`` 
 
-.. _controllers.py: https://github.com/drocco-007/tg1_rest/blob/master/tg_resources/controllers.py
+.. _controllers.py: https://github.com/drocco-007/TurboRest/blob/master/turborest_example/controllers.py
 
 tg1-resource-controllers
 

@@ -1,6 +1,6 @@
 #!/home/dan/.envs/brighttrac/bin/python
 # -*- coding: utf-8 -*-
-"""Start script for the tg1-resource-controllers- TurboGears project.
+"""Start script for the turborest_example TurboGears project.
 
 This script is only needed during development for running from the project
 directory. When the project is installed, easy_install will create a
@@ -8,7 +8,7 @@ proper start script.
 """
 
 import sys
-from tg_resources.command import start, ConfigurationError
+from turborest_example.command import start, ConfigurationError
 
 if __name__ == '__main__':
     try:

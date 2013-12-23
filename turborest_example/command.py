@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
-"""This module contains functions to be called from console script entry points.
+"""Functions to be called from console script entry points.
 """
 
-# symbols which are imported by "from tg_resources.command import *"
-__all__ = ['bootstrap', 'ConfigurationError', 'start']
+__all__ = ['ConfigurationError', 'start']
 
 import sys
-import optparse
 
 from os import getcwd
 from os.path import dirname, exists, join
@@ -17,16 +15,15 @@ try:
 except pkg_resources.DistributionNotFound:
     print """\
 This is a TurboGears 1.5.1 (http://www.turbogears.org) application.
-It seems that you either don't have TurboGears installed or it can not be found.
+It seems that you either don't have TurboGears installed or it cannot be found.
 Please check if your PYTHONPATH is set correctly. To install TurboGears, go to
-http://www.turbogears.org/en/documentation and follow the instructions there. If
-you are stuck, visit http://www.turbogears.org/en/resources for support options."""
+http://www.turbogears.org/en/documentation and follow the instructions there.
+If you are stuck, visit http://www.turbogears.org/en/resources for support
+options."""
     sys.exit(1)
 
 import cherrypy
 import turbogears
-
-from tg_resources.release import version
 
 
 cherrypy.lowercase_api = True
@@ -65,36 +62,18 @@ def _read_config(args):
     else:
         try:
             configfile = pkg_resources.resource_filename(
-              pkg_resources.Requirement.parse('tg_resources'),
+                pkg_resources.Requirement.parse('turborest_example'),
                 'config/default.cfg')
         except pkg_resources.DistributionNotFound:
             raise ConfigurationError("Could not find default configuration.")
 
     turbogears.update_config(configfile=configfile,
-        modulename='tg_resources.config')
-
-def bootstrap():
-    """Example function for loading bootstrap data into the database
-
-    You can adapt this to your needs to e.g. accept more options or to
-    run more functions for bootstrapping other parts of your application.
-    By default this runs the function 'tg_resources.model.bootstrap_model', which
-    creates all database tables and optionally adds a user.
-
-    The following line in your project's 'setup.py' file takes care of
-    installing a command line script when you install your application via
-    easy_install which will run this function:
-
-        'bootstrap-tg_resources = tg_resources.command:bootstrap',
-
-    """
-
-    raise NotImplemented()
+                             modulename='turborest_example.config')
 
 
 def start():
     """Start the CherryPy application server."""
 
     _read_config(sys.argv[1:])
-    from tg_resources.controllers import Root
+    from turborest_example.controllers import Root
     return turbogears.start_server(Root())
