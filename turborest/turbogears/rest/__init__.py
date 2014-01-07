@@ -28,8 +28,8 @@ def RESTContainer(resource_cls):
     def decorator(controller_cls):
         def __getattr__(self, attribute):
             try:
-                return resource_cls(int(attribute))
-            except ValueError:
+                return resource_cls(int(attribute), self)
+            except ValueError as e:
                 super(controller_cls, self).__getattr__(attribute)
 
         controller_cls.__getattr__ = __getattr__
@@ -58,5 +58,4 @@ class RESTResource(Controller):
         if not callable(method) or not getattr(method, 'exposed', False):
             raise cherrypy.HTTPError(405, '%s not allowed on %s' % (
                 http_method, cherrypy.request.browser_url))
-
         return method(*vpath, **kw)
