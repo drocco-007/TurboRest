@@ -3,6 +3,16 @@ import cherrypy
 from turbogears.controllers import expose, Controller
 
 
+def _default(self, *vpath, **kw):
+    http_method = cherrypy.request.method
+    method = getattr(self, http_method)
+
+    if not callable(method) or not getattr(method, 'exposed', False):
+        raise cherrypy.HTTPError(405, '%s not allowed on %s' % (
+            http_method, cherrypy.request.browser_url))
+    return method(*vpath, **kw)
+
+
 def RESTContainer(resource_cls):
     """Class decorator for implementing REST-style container controllers.
 
@@ -21,7 +31,17 @@ def RESTContainer(resource_cls):
     ...    pass
 
     The resource class must have a constructor that takes a single integer ID
-    as its parameter.
+    as its first parameter and a reference to the parent container as the
+    second parameter.
+
+    RESTContainers also do method-based dispatch if the decorated controller
+    class does *not* define default::
+
+    >>> @RESTContainer(CandidateResource)
+    ... class CandidateRootController(Controller):
+    ...    @expose()
+    ...    def GET(self):
+    ...        # handle request for /candidates
 
     """
 
@@ -33,6 +53,9 @@ def RESTContainer(resource_cls):
                 return super(controller_cls, self).__getattr__(attribute)
 
         controller_cls.__getattr__ = __getattr__
+
+        if not hasattr(controller_cls, 'default'):
+            controller_cls.default = expose()(_default)
 
         return controller_cls
 
@@ -50,12 +73,4 @@ class RESTResource(Controller):
 
     """
 
-    @expose()
-    def default(self, *vpath, **kw):
-        http_method = cherrypy.request.method
-        method = getattr(self, http_method)
-
-        if not callable(method) or not getattr(method, 'exposed', False):
-            raise cherrypy.HTTPError(405, '%s not allowed on %s' % (
-                http_method, cherrypy.request.browser_url))
-        return method(*vpath, **kw)
+    default = expose()(_default)
