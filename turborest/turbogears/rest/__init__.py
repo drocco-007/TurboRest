@@ -30,7 +30,7 @@ def RESTContainer(resource_cls):
             try:
                 return resource_cls(int(attribute), self)
             except ValueError as e:
-                super(controller_cls, self).__getattr__(attribute)
+                return super(controller_cls, self).__getattr__(attribute)
 
         controller_cls.__getattr__ = __getattr__
 
