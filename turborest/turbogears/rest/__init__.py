@@ -7,10 +7,15 @@ def _default(self, *vpath, **kw):
     http_method = cherrypy.request.method
     method = getattr(self, http_method)
 
-    if not callable(method) or not getattr(method, 'exposed', False):
+    # If there is a vpath, we tried to look up a sub-resource or other exposed
+    # method and failed
+    if vpath:
+        raise cherrypy.HTTPError(404, 'Not found')
+    elif not callable(method) or not getattr(method, 'exposed', False):
         raise cherrypy.HTTPError(405, '%s not allowed on %s' % (
             http_method, cherrypy.request.browser_url))
-    return method(*vpath, **kw)
+
+    return method(**kw)
 
 
 def RESTContainer(resource_cls):
