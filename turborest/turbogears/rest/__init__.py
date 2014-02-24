@@ -1,5 +1,6 @@
-import cherrypy
+import inspect
 
+import cherrypy
 from turbogears.controllers import expose, Controller
 
 
@@ -18,7 +19,7 @@ def _default(self, *vpath, **kw):
     return method(**kw)
 
 
-def RESTContainer(resource_cls):
+def RESTContainer(resource_cls_or_name=None):
     """Class decorator for implementing REST-style container controllers.
 
     For example, to create a list of candidate resources such that::
@@ -28,12 +29,12 @@ def RESTContainer(resource_cls):
     returns a candidate resource for the specified candidate, define the
     candidates controller as
 
-    >>> class CandidateResource(RESTResource):
-    ...     "Represents a single candidate"
-
-    >>> @RESTContainer(CandidateResource)
+    >>> @RESTContainer('CandidateResource')
     ... class CandidateRootController(Controller):
     ...    pass
+
+    >>> class CandidateResource(RESTResource):
+    ...     "Represents a single candidate"
 
     The resource class must have a constructor that takes a single integer ID
     as its first parameter and a reference to the parent container as the
@@ -51,8 +52,22 @@ def RESTContainer(resource_cls):
     """
 
     def decorator(controller_cls):
+        def resolve_resource(obj):
+            try:
+                _cls = obj.__getattribute__('resource_cls')
+            except AttributeError:
+                try:
+                    module = inspect.getmodule(type(obj))
+                    _cls = obj.resource_cls = getattr(module,
+                                                      resource_cls_or_name)
+                except AttributeError:
+                    _cls = obj.resource_cls = resource_cls_or_name
+
+            return _cls
+
         def __getattr__(self, attribute):
             try:
+                resource_cls = resolve_resource(self)
                 return resource_cls(int(attribute), self)
             except ValueError as e:
                 return super(controller_cls, self).__getattr__(attribute)
