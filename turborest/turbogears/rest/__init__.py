@@ -49,6 +49,17 @@ def RESTContainer(resource_cls_or_name=None):
     ...    def GET(self):
     ...        # handle request for /candidates
 
+    For most resource containers, it is assumed that the resource class uses
+    integer identifiers, and the int() function is used to determine that a
+    resource is being requested: non-integer attribute requests are assumed to
+    be requests for attributes on the container itself.
+
+    If the resource class defines a valid_id static function, it is used in
+    preference to the int function to determine if an attribute request should
+    return an instance of the container's resource class. The valid_id function
+    should take a single argument and return it if it is a valid identifier or
+    raise ValueError if it is not.
+
     """
 
     def decorator(controller_cls):
@@ -68,7 +79,8 @@ def RESTContainer(resource_cls_or_name=None):
         def __getattr__(self, attribute):
             try:
                 resource_cls = resolve_resource(self)
-                return resource_cls(int(attribute), self)
+                id_validator = getattr(resource_cls, 'valid_id', int)
+                return resource_cls(id_validator(attribute), self)
             except ValueError as e:
                 try:
                     return super(controller_cls, self).__getattr__(attribute)
