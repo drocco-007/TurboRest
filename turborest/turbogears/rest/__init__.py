@@ -70,7 +70,12 @@ def RESTContainer(resource_cls_or_name=None):
                 resource_cls = resolve_resource(self)
                 return resource_cls(int(attribute), self)
             except ValueError as e:
-                return super(controller_cls, self).__getattr__(attribute)
+                try:
+                    return super(controller_cls, self).__getattr__(attribute)
+                except:
+                    raise AttributeError(
+                        'No attribute {} defined on {}' \
+                        .format(attribute, controller_cls.__name__))
 
         controller_cls.__getattr__ = __getattr__
 
