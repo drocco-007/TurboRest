@@ -71,7 +71,7 @@ def RESTContainer(resource_cls_or_name=None):
                     module = inspect.getmodule(type(obj))
                     _cls = obj.resource_cls = getattr(module,
                                                       resource_cls_or_name)
-                except AttributeError:
+                except (TypeError, AttributeError):
                     _cls = obj.resource_cls = resource_cls_or_name
 
             return _cls
