@@ -4,6 +4,10 @@ import cherrypy
 from turbogears.controllers import expose, Controller
 
 
+import logging
+log = logging.getLogger('turbogears.rest')
+
+
 def _default(self, *vpath, **kw):
     http_method = cherrypy.request.method
     method = getattr(self, http_method)
@@ -65,7 +69,7 @@ def RESTContainer(resource_cls_or_name=None):
     def decorator(controller_cls):
         def resolve_resource(obj):
             try:
-                _cls = obj.__getattribute__('resource_cls')
+                _cls = obj.resource_cls
             except AttributeError:
                 try:
                     module = inspect.getmodule(type(obj))
@@ -76,20 +80,22 @@ def RESTContainer(resource_cls_or_name=None):
 
             return _cls
 
-        def __getattr__(self, attribute):
-            try:
-                resource_cls = resolve_resource(self)
-                id_validator = getattr(resource_cls, 'valid_id', int)
-                return resource_cls(id_validator(attribute), self)
-            except ValueError as e:
-                try:
-                    return super(controller_cls, self).__getattr__(attribute)
-                except:
-                    raise AttributeError(
-                        'No attribute {} defined on {}' \
-                        .format(attribute, controller_cls.__name__))
+        def _cp_dispatch(self, vpath):
+            log.debug('%s vpath: %s', type(self).__name__, vpath)
 
-        controller_cls.__getattr__ = __getattr__
+            try:
+                resource_id = vpath[0]
+                resource_cls = resolve_resource(self)
+                id_validator = getattr(resource_cls, 'valid_id', str)
+                return resource_cls(id_validator(resource_id), self)
+            except ValueError as e:
+                log.debug('Invalid resource id: %s (%s: %s)',
+                          resource_id,
+                          type(e).__name__,
+                          e)
+                return vpath
+
+        controller_cls._cp_dispatch = _cp_dispatch
 
         if not hasattr(controller_cls, 'default'):
             controller_cls.default = expose()(_default)
